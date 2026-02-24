@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { GoogleGenAI, Type, ThinkingLevel } from '@google/genai';
-import { Loader2, Copy, CheckCircle2, Sparkles, BookA, X } from 'lucide-react';
+import { Loader2, Copy, CheckCircle2, Sparkles, BookA, X, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const DIFFICULTIES = [
   { id: 'سهل جداً ومباشر', label: 'سهل' },
@@ -36,6 +34,15 @@ export default function App() {
     setAntonyms([]);
 
     try {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey || apiKey === 'undefined') {
+        setError('مفتاح API مفقود. يرجى إضافة GEMINI_API_KEY في إعدادات البيئة (Environment Variables) في Netlify وإعادة بناء المشروع (Trigger Deploy).');
+        setIsLoading(false);
+        return;
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
+
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: `أعطني ${count} تلميحات كلمات متقاطعة لكلمة "${word}". الصعوبة: ${difficulty}. لا تذكر الكلمة. الإجابة الوحيدة هي الكلمة. أعطني أيضاً مرادفات وأضداد.`,
