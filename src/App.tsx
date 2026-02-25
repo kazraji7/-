@@ -70,9 +70,23 @@ export default function App() {
       } else {
         setError('لم يتم إرجاع أي نتيجة. حاول مرة أخرى.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError('حدث خطأ أثناء إنشاء التلميحات. يرجى المحاولة مرة أخرى.');
+      let errorMessage = 'حدث خطأ أثناء إنشاء التلميحات. يرجى المحاولة مرة أخرى.';
+      
+      if (err.message) {
+        if (err.message.includes('API_KEY_INVALID')) {
+          errorMessage = 'مفتاح API غير صالح. يرجى التأكد من صحة المفتاح في إعدادات Netlify.';
+        } else if (err.message.includes('QUOTA_EXCEEDED')) {
+          errorMessage = 'تم تجاوز حصة الاستخدام (Quota). يرجى الانتظار قليلاً ثم المحاولة مرة أخرى.';
+        } else if (err.message.includes('location not supported')) {
+          errorMessage = 'خدمة Gemini غير متوفرة في منطقتك الحالية حالياً.';
+        } else {
+          errorMessage = `خطأ: ${err.message}`;
+        }
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
